@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 
@@ -163,3 +164,24 @@ REST_FRAMEWORK = {
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+
+if DEBUG:
+
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+
+        "loggers": {
+            "django.db.backends": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+            },
+        },
+    }
