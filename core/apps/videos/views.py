@@ -1,4 +1,4 @@
-from django.db.models import OuterRef, Sum
+from django.db.models import OuterRef, Sum, Q
 
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -6,35 +6,29 @@ from rest_framework.response import Response
 
 from apps.users.models import AppUser
 from apps.videos.models import Video
-from apps.videos.serializers import VideoRetrieveSerializer, StatisticsSerializer
+from apps.videos.serializers import VideoRetrieveSerializer, StatisticsSerializer, VideoSerializer
 
 from apps.videos.services.likes import LikeSetter
 
 
-class VideoViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class VideoViewSet(viewsets.ModelViewSet):
+    queryset = Video.objects.all().prefetch_related("files")
+    serializer_class = VideoSerializer
 
-    queryset = Video.objects.all()
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get_queryset(self):
-        qs = Video.objects.prefetch_related("files").order_by("-created_at")
+        qs = super().get_queryset()
+        user = self.request.user
 
-        if self.action in ("likes", "ids"):
-            return Video.objects.published()
-        if self.request.user.is_staff:
+        if user.is_staff:
             return qs
-        return qs.published(user=self.request.user)
-    
-    def get_serializer_class(self):
-
-        if self.action in ("list", "retrieve"):
-            return VideoRetrieveSerializer
-        if self.action in ("statistics_subquery", "statistics_group_by",):
-            return StatisticsSerializer
-        return VideoRetrieveSerializer
+        if user.is_authenticated:
+            return qs.filter(Q(is_published=True) | Q(owner=user))
+        return qs.filter(is_published=True)
     
     '''POST /v1/videos/{id}/likes/
         DELETE /v1/videos/{id}/likes/'''
