@@ -7,7 +7,7 @@
 ### 1. Склонировать репозиторий:
 
 ```sh 
-git clone (https://github.com/Igor39-dev/django_section.git)
+git clone https://github.com/Igor39-dev/django_section.git
 ```
 
 cd project
