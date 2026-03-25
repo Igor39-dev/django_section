@@ -1,3 +1,25 @@
 from django.contrib import admin
+from apps.videos.models import Video, VideoFile, Like
 
-# Register your models here.
+
+class VideoFileInline(admin.TabularInline):
+    model = VideoFile
+    extra = 1
+
+
+@admin.register(Video)
+class VideoAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "owner", "is_published", "total_likes", "created_at",)
+    list_filter = ("is_published", "created_at",)
+    search_fields = ("name", "owner__username",)
+    inlines = [VideoFileInline]
+
+
+@admin.register(VideoFile)
+class VideoFileAdmin(admin.ModelAdmin):
+    list_display = ("id", "video", "quality")
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ("id", "video", "user")
