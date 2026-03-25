@@ -5,23 +5,11 @@ from apps.videos.querysets import VideoQuerySet
 
 class Video(models.Model):
 
-    owner = models.ForeignKey(
-        "users.AppUser",
-        on_delete=models.PROTECT,
-        related_name="videos"
-    )
-
+    owner = models.ForeignKey("users.AppUser", on_delete=models.PROTECT, related_name="videos")
     is_published = models.BooleanField(default=False)
-
     name = models.CharField(max_length=255)
-
     total_likes = models.PositiveIntegerField(default=0)
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        db_index=True
-    )
-
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     objects = VideoQuerySet.as_manager()
 
     def __str__(self):
@@ -39,19 +27,9 @@ class VideoFile(models.Model):
         FHD = "FHD", "1080p"
         UHD = "UHD", "4K"
 
-    video = models.ForeignKey(
-        "videos.Video",
-        on_delete=models.CASCADE,
-        related_name="files"
-    )
-
+    video = models.ForeignKey("videos.Video", on_delete=models.CASCADE, related_name="files")
     file = models.FileField(blank=True, null=True)
-
-    quality = models.CharField(
-        max_length=3,
-        choices=QualityChoices.choices,
-        default=QualityChoices.HD
-    )
+    quality = models.CharField(max_length=3, choices=QualityChoices.choices, default=QualityChoices.HD)
 
     class Meta:
         unique_together = ("video", "quality")
@@ -59,17 +37,8 @@ class VideoFile(models.Model):
 
 class Like(models.Model):
 
-    video = models.ForeignKey(
-        "videos.Video",
-        on_delete=models.CASCADE,
-        related_name="likes"
-    )
-
-    user = models.ForeignKey(
-        "users.AppUser",
-        on_delete=models.CASCADE,
-        related_name="likes"
-    )
+    video = models.ForeignKey("videos.Video", on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey("users.AppUser", on_delete=models.CASCADE, related_name="likes")
 
     class Meta:
         unique_together = ("video", "user")
